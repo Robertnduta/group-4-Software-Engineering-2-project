@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MedFlow</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- JS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</head>
+
+<body>
+    <!-- Loading Animation -->
+    <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="dashboard-container container-fluid">
+        <aside class="sidebar bg-dark text-white p-3">
+            <h2 class="text-center"><i class="fas fa-hospital"></i> MedFlow</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="/patient_registration" class="nav-link text-white">
+                        <i class="fas fa-user-plus"></i> Registration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/create_op_visit" class="nav-link text-white">
+                        <i class="fas fa-notes-medical"></i> OP Visit
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/triage" class="nav-link text-white">
+                        <i class="fas fa-stethoscope"></i> Triage
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/consultation" class="nav-link text-white">
+                        <i class="fas fa-user-md"></i> Consultation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/radiology" class="nav-link text-white">
+                        <i class="fas fa-x-ray"></i> Radiology
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/inpatient" class="nav-link text-white">
+                        <i class="fas fa-bed"></i> Inpatient
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/ward" class="nav-link text-white">
+                        <i class="fas fa-procedures"></i> Ward
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/cashier" class="nav-link text-white">
+                        <i class="fas fa-money-bill"></i> Cashier
+                    </a>
+                </li>
+            </ul>
+            <button class="btn btn-danger mt-3 w-100" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </aside>
+
+        <main class="content p-4">
+            <h1 class="text-center mb-4">Hospital Dashboard</h1>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="card shadow p-3 mb-4 bg-white rounded">
+                        <h5 class="card-title">Total OP Patients</h5>
+                        <p class="card-text fs-3 fw-bold text-primary" id="totalOp">Loading...</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow p-3 mb-4 bg-white rounded">
+                        <h5 class="card-title">Total Inpatients</h5>
+                        <p class="card-text fs-3 fw-bold text-primary" id="totalInpatients">Loading...</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow p-3 mb-4 bg-white rounded">
+                        <h5 class="card-title">Total Doctors</h5>
+                        <p class="card-text fs-3 fw-bold text-primary" id="totalDoctors">Loading...</p>
+                    </div>
+                </div>
+            </div>
+            <canvas id="revenueChart"></canvas>
+        </main>
+    </div>
+
+    <script>
+        // Wait for the document to be ready before fetching the data
+        document.addEventListener("DOMContentLoaded", function () {
+            // Show the loading animation while data is being fetched
+            document.querySelector('.loading-overlay').style.display = 'block';
+
+            fetch('/api/dashboard-data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalOp').innerText = data.totalOp;
+                    document.getElementById('totalInpatients').innerText = data.totalInpatients;
+                    document.getElementById('totalDoctors').innerText = data.totalDoctors;
+                    // Hide the loading animation once data is loaded
+                    document.querySelector('.loading-overlay').style.display = 'none';
+
+                    // Create the revenue chart using Chart.js
+                    var ctx = document.getElementById('revenueChart').getContext('2d');
+                    var revenueChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['OP Visits', 'Inpatients', 'Doctors', 'Total Revenue'],
+                            datasets: [{
+                                label: 'Hospital Stats',
+                                data: [data.totalOp, data.totalInpatients, data.totalDoctors, data.totalRevenue],
+                                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                                borderColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.querySelector('.loading-overlay').style.display = 'none';
+                });
+        });
+
+        // Logout function
+        function logout() {
+            window.location.href = '/logout';  // Redirect to logout route
+        }
+    </script>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

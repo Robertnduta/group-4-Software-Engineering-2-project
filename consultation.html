@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation - MedFlow</title>
+    <!-- Add Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            min-height: 100%;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Section -->
+    <aside class="sidebar bg-dark text-white p-3">
+        <h2 class="text-center"><i class="fas fa-hospital"></i> MedFlow</h2>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="/patient_registration" class="nav-link text-white">
+                    <i class="fas fa-user-plus"></i> Registration
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/create_op_visit" class="nav-link text-white">
+                    <i class="fas fa-notes-medical"></i> OP Visit
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/triage" class="nav-link text-white">
+                    <i class="fas fa-stethoscope"></i> Triage
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/consultation" class="nav-link text-white">
+                    <i class="fas fa-user-md"></i> Consultation
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/radiology" class="nav-link text-white">
+                    <i class="fas fa-x-ray"></i> Radiology
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/inpatient" class="nav-link text-white">
+                    <i class="fas fa-bed"></i> Inpatient
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/ward" class="nav-link text-white">
+                    <i class="fas fa-procedures"></i> Ward
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/cashier" class="nav-link text-white">
+                    <i class="fas fa-money-bill"></i> Cashier
+                </a>
+            </li>
+        </ul>
+        <button class="btn btn-danger mt-3 w-100" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </aside>
+
+    <!-- Main Content Section -->
+    <div class="content">
+        <h1>Consultation</h1>
+        
+        <!-- Patient Search -->
+        <div class="mb-3">
+            <label for="patientSearch" class="form-label">Search for Patient (Patient ID)</label>
+            <input type="text" class="form-control" id="patientSearch" placeholder="Enter Patient ID">
+            <button class="btn btn-primary mt-2" onclick="searchPatient()">Search</button>
+        </div>
+
+        <div id="patientDetails" class="mb-4">
+            <!-- Patient details will be dynamically loaded here -->
+        </div>
+
+        <!-- Consultation Form -->
+        <form id="consultationForm">
+            <h3>Doctor's Notes</h3>
+            <div class="mb-3">
+                <textarea class="form-control" id="doctorNotes" rows="4" placeholder="Enter Doctor's Notes"></textarea>
+            </div>
+
+            <h3>Prescription</h3>
+            <table class="table" id="prescriptionTable">
+                <thead>
+                    <tr>
+                        <th>Drug</th>
+                        <th>Method</th>
+                        <th>Time</th>
+                        <th><button type="button" class="btn btn-success btn-sm" onclick="addPrescriptionRow()">Add Row</button></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" class="form-control" name="drug[]"></td>
+                        <td><input type="text" class="form-control" name="method[]"></td>
+                        <td><input type="text" class="form-control" name="time[]"></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Billing</h3>
+            <table class="table" id="billingTable">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Amount (KSH)</th>
+                        <th><button type="button" class="btn btn-success btn-sm" onclick="addBillingRow()">Add Row</button></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" class="form-control" name="service[]"></td>
+                        <td><input type="number" class="form-control" name="amount[]"></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Referral</h3>
+            <div class="mb-3">
+                <label for="referralHospital" class="form-label">Hospital</label>
+                <input type="text" class="form-control" id="referralHospital" placeholder="Enter Referral Hospital">
+            </div>
+            <div class="mb-3">
+                <label for="referralDepartment" class="form-label">Department</label>
+                <input type="text" class="form-control" id="referralDepartment" placeholder="Enter Referral Department">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Consultation</button>
+        </form>
+    </div>
+
+    <!-- Add Bootstrap JS, Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Function to handle logout
+        function logout() {
+            window.location.href = "/logout";
+        }
+
+        // Function to search for a patient by patient_id
+        function searchPatient() {
+            const patientId = document.getElementById("patientSearch").value;
+            if (patientId) {
+                // Here you would make an AJAX request to fetch patient details from the database
+                // For example, using fetch or XMLHttpRequest to the backend
+                fetch(`/api/patient/${patientId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            const patientDetails = `
+                                <h4>Patient Details</h4>
+                                <p><strong>Name:</strong> ${data.first_name} ${data.last_name}</p>
+                                <p><strong>Age:</strong> ${data.age}</p>
+                                <p><strong>Gender:</strong> ${data.gender}</p>
+                                <p><strong>Phone:</strong> ${data.phone}</p>
+                                <p><strong>Next of Kin:</strong> ${data.next_of_kin}</p>
+                                <p><strong>Residence:</strong> ${data.residency}</p>
+                            `;
+                            document.getElementById("patientDetails").innerHTML = patientDetails;
+                        } else {
+                            alert('Patient not found');
+                        }
+                    })
+                    .catch(error => alert('Error fetching patient details'));
+            } else {
+                alert('Please enter a valid Patient ID');
+            }
+        }
+
+        // Add a row to the prescription table
+        function addPrescriptionRow() {
+            const table = document.getElementById("prescriptionTable").getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td><input type="text" class="form-control" name="drug[]"></td>
+                <td><input type="text" class="form-control" name="method[]"></td>
+                <td><input type="text" class="form-control" name="time[]"></td>
+                <td></td>
+            `;
+        }
+
+        // Add a row to the billing table
+        function addBillingRow() {
+            const table = document.getElementById("billingTable").getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td><input type="text" class="form-control" name="service[]"></td>
+                <td><input type="number" class="form-control" name="amount[]"></td>
+                <td></td>
+            `;
+        }
+
+        // Handle the consultation form submission
+        document.getElementById("consultationForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Here you would collect all form data and send it to the server for processing
+            const formData = new FormData(this);
+            // Example of sending data to the backend
+            fetch('/api/consultation', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => alert('Consultation saved successfully'))
+            .catch(error => alert('Error saving consultation'));
+        });
+    </script>
+</body>
+</html>

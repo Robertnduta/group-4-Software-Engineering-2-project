@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedFlow - OP Visit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            transition: all 0.3s;
+        }
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            transition: all 0.3s;
+        }
+        .hide-sidebar .sidebar {
+            width: 0;
+            padding: 0;
+        }
+        .hide-sidebar .main-content {
+            margin-left: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <aside class="sidebar bg-dark text-white p-3">
+            <h2 class="text-center"><i class="fas fa-hospital"></i> MedFlow</h2>
+            <button class="btn btn-light w-100 mb-3" onclick="toggleSidebar()">Toggle Sidebar</button>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="/patient_registration" class="nav-link text-white"><i class="fas fa-user-plus"></i> Registration</a></li>
+                <li class="nav-item"><a href="/create_op_visit" class="nav-link text-white"><i class="fas fa-notes-medical"></i> OP Visit</a></li>
+                <li class="nav-item"><a href="/triage" class="nav-link text-white"><i class="fas fa-stethoscope"></i> Triage</a></li>
+                <li class="nav-item"><a href="/consultation" class="nav-link text-white"><i class="fas fa-user-md"></i> Consultation</a></li>
+                <li class="nav-item"><a href="/radiology" class="nav-link text-white"><i class="fas fa-x-ray"></i> Radiology</a></li>
+                <li class="nav-item"><a href="/inpatient" class="nav-link text-white"><i class="fas fa-bed"></i> Inpatient</a></li>
+                <li class="nav-item"><a href="/ward" class="nav-link text-white"><i class="fas fa-procedures"></i> Ward</a></li>
+                <li class="nav-item"><a href="/cashier" class="nav-link text-white"><i class="fas fa-money-bill"></i> Cashier</a></li>
+            </ul>
+            <button class="btn btn-danger mt-3 w-100" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="container p-4 main-content">
+            <h2 class="mb-4">Create OP Visit</h2>
+            <input type="text" id="search" class="form-control mb-3" placeholder="Search patient by name, ID or phone...">
+            
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Visit Purpose</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="patientList">
+                    {% for patient in recent_patients %}
+                    <tr>
+                        <td>{{ patient.patient_id }}</td>
+                        <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                        <td>{{ patient.age }}</td>
+                        <td>{{ patient.gender }}</td>
+                        <td>
+                            <select class="form-select" name="visit_purpose" id="visit_purpose_{{ patient.patient_id }}">
+                                {% for purpose in visit_purposes %}
+                                <option value="{{ purpose }}">{{ purpose }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('create_op_visit') }}" onsubmit="return confirmVisit('{{ patient.patient_id }}')">
+                                <input type="hidden" name="patient_id" value="{{ patient.patient_id }}">
+                                <input type="hidden" name="visit_purpose" id="hidden_visit_purpose_{{ patient.patient_id }}" value="">
+                                <button type="submit" class="btn btn-success" onclick="setVisitPurpose('{{ patient.patient_id }}')">
+                                    Create OP Visit
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </main>
+    </div>
+    
+    <script>
+        function setVisitPurpose(patientId) {
+            document.getElementById('hidden_visit_purpose_' + patientId).value = document.getElementById('visit_purpose_' + patientId).value;
+        }
+
+        document.getElementById('search').addEventListener('keyup', function() {
+            var filter = this.value.toLowerCase();
+            document.querySelectorAll('#patientList tr').forEach(function(row) {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            });
+        });
+
+        function logout() {
+            window.location.href = "{{ url_for('logout') }}";
+        }
+        
+        function toggleSidebar() {
+            document.body.classList.toggle('hide-sidebar');
+        }
+        
+        function confirmVisit(patientId) {
+            return confirm("Are you sure you want to create an OP visit for Patient ID " + patientId + "?");
+        }
+    </script>
+</body>
+</html>

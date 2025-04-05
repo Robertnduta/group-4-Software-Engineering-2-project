@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration - MedFlow</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/registration_page.css') }}">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script>
+        function navigateTo(page) {
+            $(".loading-overlay").fadeIn();
+            setTimeout(() => {
+                window.location.href = page;
+            }, 1000);
+        }
+
+        function submitForm() {
+            $(".loading-overlay").fadeIn();
+            $("#registrationForm").submit();
+        }
+
+        function logout() {
+            window.location.href = "{{ url_for('logout') }}";
+        }
+
+        $(document).ready(function() {
+            setTimeout(() => $(".loading-overlay").fadeOut(), 1000);
+        });
+    </script>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-hospital"></i> MedFlow</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/patient_registration">Registration</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/create_op_visit">OP Visit</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/triage">Triage</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/consultation">Consultation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/radiology">Radiology</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inpatient">Inpatient</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ward">Ward</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/cashier">Cashier</a></li>
+                </ul>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Patient Registration</h1>
+        <p class="text-danger fw-bold"><i class="fas fa-info-circle"></i> Registration Bill: KSH 100</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-{{ messages[0][0] }}">
+                    {{ messages[0][1] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form id="registrationForm" method="POST" class="row g-3 shadow-lg p-4 bg-white rounded">
+            <div class="col-md-4">
+                <label for="patient_id" class="form-label">Patient ID</label>
+                <input type="text" class="form-control" id="patient_id" name="patient_id" value="{{ unique_id }}" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="first_name" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" required>
+            </div>
+            <div class="col-md-4">
+                <label for="last_name" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" required>
+            </div>
+            <div class="col-md-4">
+                <label for="age" class="form-label">Age</label>
+                <input type="number" class="form-control" id="age" name="age" required>
+            </div>
+            <div class="col-md-4">
+                <label for="gender" class="form-label">Gender</label>
+                <select class="form-control" id="gender" name="gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="text" class="form-control" id="phone" name="phone" required>
+            </div>
+            <div class="col-md-4">
+                <label for="residency" class="form-label">Residency</label>
+                <input type="text" class="form-control" id="residency" name="residency" required>
+            </div>
+            <div class="col-md-4">
+                <label for="spouse_name" class="form-label">Spouse Name</label>
+                <input type="text" class="form-control" id="spouse_name" name="spouse_name">
+            </div>
+            <div class="col-md-4">
+                <label for="spouse_phone" class="form-label">Spouse Phone</label>
+                <input type="text" class="form-control" id="spouse_phone" name="spouse_phone">
+            </div>
+            <div class="col-md-4">
+                <label for="next_of_kin" class="form-label">Next of Kin</label>
+                <input type="text" class="form-control" id="next_of_kin" name="next_of_kin" required>
+            </div>
+            <div class="col-md-4">
+                <label for="registered_by" class="form-label">Registered By (Staff ID)</label>
+                <input type="number" class="form-control" id="registered_by" name="registered_by" required>
+            </div>
+            <div class="col-md-4">
+                <label for="registration_date" class="form-label">Registration Date</label>
+                <input type="datetime-local" class="form-control" id="registration_date" name="registration_date" required>
+            </div>
+            <div class="col-12">
+                <button type="button" class="btn btn-primary" onclick="submitForm()">
+                    <i class="fas fa-check-circle"></i> Submit
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

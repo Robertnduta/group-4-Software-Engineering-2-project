@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triage - MedFlow</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .warning-msg {
+            display: none;
+            color: red;
+            font-size: 0.9em;
+        }
+        .bmi-category {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar bg-dark text-white p-3 col-md-2">
+    <h2 class="text-center"><i class="fas fa-hospital"></i> MedFlow</h2>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a href="/patient_registration" class="nav-link text-white">
+                <i class="fas fa-user-plus"></i> Registration
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/create_op_visit" class="nav-link text-white">
+                <i class="fas fa-notes-medical"></i> OP Visit
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/triage" class="nav-link text-white active">
+                <i class="fas fa-stethoscope"></i> Triage
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/consultation" class="nav-link text-white">
+                <i class="fas fa-user-md"></i> Consultation
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/radiology" class="nav-link text-white">
+                <i class="fas fa-x-ray"></i> Radiology
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/inpatient" class="nav-link text-white">
+                <i class="fas fa-bed"></i> Inpatient
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/ward" class="nav-link text-white">
+                <i class="fas fa-procedures"></i> Ward
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/cashier" class="nav-link text-white">
+                <i class="fas fa-money-bill"></i> Cashier
+            </a>
+        </li>
+    </ul>
+    <button class="btn btn-danger mt-3 w-100" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+</aside>
+
+<!-- Main Content -->
+<div class="content">
+    <h1>Triage</h1>
+    <form method="POST" action="/triage">
+        <div class="form-group">
+            <label for="patient_id">Select Patient</label>
+            <select id="patient_id" name="patient_id" class="form-control" required>
+                {% for patient in patients %}
+                    <option value="{{ patient.patient_id }}">{{ patient.first_name }} {{ patient.last_name }} ({{ patient.age }} years, {{ patient.gender }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="doctor_id">Select Doctor</label>
+            <select id="doctor_id" name="doctor_id" class="form-control" required>
+                {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}">{{ doctor.first_name }} {{ doctor.last_name }} ({{ doctor.department }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="room">Room</label>
+            <input type="text" id="room" name="room" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="temperature">Temperature (°C)</label>
+            <input type="number" id="temperature" name="temperature" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="blood_pressure">Blood Pressure</label>
+            <input type="text" id="blood_pressure" name="blood_pressure" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="heart_rate">Heart Rate (bpm)</label>
+            <input type="number" id="heart_rate" name="heart_rate" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="respiratory_rate">Respiratory Rate (breaths/min)</label>
+            <input type="number" id="respiratory_rate" name="respiratory_rate" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="height">Height (cm)</label>
+            <input type="number" id="height" name="height" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="weight">Weight (kg)</label>
+            <input type="number" id="weight" name="weight" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="oxygen_saturation">Oxygen Saturation (%)</label>
+            <input type="number" id="oxygen_saturation" name="oxygen_saturation" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="blood_sugar">Blood Sugar (mg/dL)</label>
+            <input type="number" id="blood_sugar" name="blood_sugar" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="triage_notes">Triage Notes</label>
+            <textarea id="triage_notes" name="triage_notes" class="form-control" rows="4"></textarea>
+        </div>
+
+        <button type="submit" name="triage_submit" class="btn btn-primary">Submit Triage</button>
+    </form>
+
+    <div id="bmi-msg" class="mt-4">
+        <p><strong>BMI: </strong><span id="bmi-value"></span></p>
+        <p><strong>Category: </strong><span id="bmi-category"></span></p>
+    </div>
+
+    <div id="warning-msg" class="warning-msg mt-4">
+        <p>Please ensure height and weight are within reasonable limits.</p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('height').addEventListener('input', function() {
+        let height = parseFloat(this.value);
+        let weight = parseFloat(document.getElementById('weight').value);
+        let bmi = weight / ((height / 100) ** 2);
+        
+        if (height < 120 || height > 250 || weight < 30 || weight > 200) {
+            document.getElementById('warning-msg').style.display = 'block';
+        } else {
+            document.getElementById('warning-msg').style.display = 'none';
+        }
+        
+        document.getElementById('bmi-value').innerText = bmi.toFixed(2);
+        document.getElementById('bmi-category').innerText = bmi < 18.5 ? 'Underweight' :
+            bmi <= 24.9 ? 'Normal weight' :
+            bmi <= 29.9 ? 'Overweight' : 'Obese';
+        document.getElementById('bmi-msg').style.display = 'block';
+    });
+</script>
+
+</body>
+</html>

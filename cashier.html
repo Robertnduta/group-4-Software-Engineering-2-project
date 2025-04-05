@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier - MedFlow</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</head>
+<body>
+    <aside class="sidebar bg-dark text-white p-3">
+        <h2 class="text-center"><i class="fas fa-hospital"></i> MedFlow</h2>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a href="/patient_registration" class="nav-link text-white"><i class="fas fa-user-plus"></i> Registration</a></li>
+            <li class="nav-item"><a href="/create_op_visit" class="nav-link text-white"><i class="fas fa-notes-medical"></i> OP Visit</a></li>
+            <li class="nav-item"><a href="/triage" class="nav-link text-white"><i class="fas fa-stethoscope"></i> Triage</a></li>
+            <li class="nav-item"><a href="/consultation" class="nav-link text-white"><i class="fas fa-user-md"></i> Consultation</a></li>
+            <li class="nav-item"><a href="/radiology" class="nav-link text-white"><i class="fas fa-x-ray"></i> Radiology</a></li>
+            <li class="nav-item"><a href="/inpatient" class="nav-link text-white"><i class="fas fa-bed"></i> Inpatient</a></li>
+            <li class="nav-item"><a href="/ward" class="nav-link text-white"><i class="fas fa-procedures"></i> Ward</a></li>
+            <li class="nav-item"><a href="/cashier" class="nav-link text-white active"><i class="fas fa-money-bill"></i> Cashier</a></li>
+        </ul>
+        <button class="btn btn-danger mt-3 w-100" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </aside>
+    
+    <main class="container mt-4">
+        <h2>Cashier</h2>
+        <label for="patient-select">Select Patient:</label>
+        <select id="patient-select" class="form-control">
+            <option value="">-- Select Patient --</option>
+            {% for patient in patients %}
+                <option value="{{ patient.id }}">{{ patient.name }}</option>
+            {% endfor %}
+        </select>
+
+        <div id="bill-details" class="mt-3" style="display:none;">
+            <h4>Bill Details</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Amount (KSH)</th>
+                    </tr>
+                </thead>
+                <tbody id="bill-table-body"></tbody>
+                <tfoot>
+                    <tr>
+                        <th>Total</th>
+                        <th id="total-amount">0</th>
+                    </tr>
+                </tfoot>
+            </table>
+            <label for="amount-paid">Amount Paid (KSH):</label>
+            <input type="number" id="amount-paid" class="form-control" min="0">
+            <button class="btn btn-success mt-2" onclick="processPayment()">Pay</button>
+            <h4 id="balance-display" class="mt-3"></h4>
+        </div>
+    </main>
+    
+    <script>
+        $(document).ready(function() {
+            $('#patient-select').change(function() {
+                let patientId = $(this).val();
+                if (patientId) {
+                    $.get(`/api/bills/${patientId}`, function(data) {
+                        let billTable = $('#bill-table-body');
+                        billTable.empty();
+                        let total = 0;
+                        data.forEach(bill => {
+                            billTable.append(`<tr><td>${bill.service}</td><td>${bill.amount}</td></tr>`);
+                            total += parseFloat(bill.amount);
+                        });
+                        $('#total-amount').text(total);
+                        $('#bill-details').show();
+                    });
+                } else {
+                    $('#bill-details').hide();
+                }
+            });
+        });
+
+        function processPayment() {
+            let total = parseFloat($('#total-amount').text());
+            let paid = parseFloat($('#amount-paid').val());
+            if (isNaN(paid) || paid < 0) {
+                alert('Please enter a valid payment amount.');
+                return;
+            }
+            let balance = paid - total;
+            $('#balance-display').text(`Balance: KSH ${balance}`);
+            alert('Payment successful!');
+        }
+    </script>
+</body>
+</html>
